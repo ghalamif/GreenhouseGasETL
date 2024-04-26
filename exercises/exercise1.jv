@@ -23,6 +23,7 @@ pipeline AirportsPipeline {
       "Lfd. Nummer" oftype integer,
       "Name des Flughafens" oftype text ,
       "Ort" oftype text,
+      "Land" oftype text,
       "IATA" oftype text,
       "ICAO" oftype text,
       "Latitude" oftype decimal,
