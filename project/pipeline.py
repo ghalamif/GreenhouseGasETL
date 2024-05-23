@@ -9,7 +9,7 @@ import logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 def set_environment():
-    """Set environment variables for Kaggle API."""
+#Set environment variables for Kaggle API.
     kaggle_dir = os.path.expanduser('~/.kaggle')
     cache_dir = os.path.join(kaggle_dir, 'cache')
     os.environ['KAGGLE_CONFIG_DIR'] = kaggle_dir
@@ -17,13 +17,13 @@ def set_environment():
     os.makedirs(cache_dir, exist_ok=True)
 
 def download_datasets(commands):
-    """Download datasets using Kaggle API commands."""
+#Download datasets using Kaggle API commands.
     for command in commands:
         subprocess.run(command, shell=True, check=True)
         logging.info(f"Executed command: {command}")
 
 def extract_zip_files(zip_files, extract_folders):
-    """Extract downloaded ZIP files."""
+#Extract downloaded ZIP files.
     for zip_file, folder in zip(zip_files, extract_folders):
         with zipfile.ZipFile(zip_file, 'r') as zip_ref:
             zip_ref.extractall(folder)
@@ -31,7 +31,7 @@ def extract_zip_files(zip_files, extract_folders):
         logging.info(f"Extracted and removed: {zip_file}")
 
 def read_csv_file(file_path, encodings):
-    """Read a CSV file with multiple encoding attempts."""
+#Read a CSV file with multiple encoding attempts
     for enc in encodings:
         try:
             df = pd.read_csv(file_path, encoding=enc)
@@ -43,28 +43,28 @@ def read_csv_file(file_path, encodings):
     return None
 
 def process_crop_data(df):
-    """Filter crop data for the USA from 1990 to 2018 and sum values by year."""
+#Filter crop data for the USA from 1990 to 2018 and sum values by year
     return df[(df['LOCATION'] == 'USA') & (df['TIME'].between(1990, 2018))].groupby('TIME', as_index=False)['Value'].sum()
 
 def process_ghg_data(df):
-    """Filter greenhouse gas data for the USA from 1990 to 2018."""
+#Filter greenhouse gas data for the USA from 1990 to 2018
     columns_to_keep = ['Country/Region', 'unit'] + [str(year) for year in range(1990, 2019)]
     return df[df['Country/Region'] == 'United States'][columns_to_keep]
 
 def save_to_sqlite(df, db_path, table_name):
-    """Save dataframe to SQLite database."""
+#Save dataframe to SQLite database
     os.makedirs('data', exist_ok=True)
     with sqlite3.connect(db_path) as conn:
         df.to_sql(table_name, conn, if_exists='replace', index=False)
     logging.info(f"Data saved to SQLite database at: {db_path}")
 
 def load_sqlite_table(db_path, table_name):
-    """Load a table from a SQLite database."""
+    #Load a table from a SQLite database
     with sqlite3.connect(db_path) as conn:
         return pd.read_sql(f"SELECT * FROM {table_name}", conn)
 
 def merge_data(crop_df, ghg_df):
-    """Merge crop production data with greenhouse gas emission data."""
+    #Merge crop production data with greenhouse gas emission data
     ghg_df = ghg_df.melt(id_vars=['Country/Region', 'unit'], var_name='TIME', value_name='Emissions')
     ghg_df['TIME'] = ghg_df['TIME'].astype(int)
     return pd.merge(crop_df, ghg_df[['TIME', 'Emissions']], on='TIME').rename(columns={'Emissions': 'MtCO2e'})
