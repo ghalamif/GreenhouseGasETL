@@ -3,9 +3,9 @@ pipeline GoodsTransportedPipeline {
     GoodsTransportedExtractor -> GoodsTransportedTextFileInterpreter
     -> GoodsTransportedCSVInterpreter 
     -> SelectData
-    -> DeleteCol
     ->GoodsTransportHeaderWriterAtoE
-    //-> GoodsTransportHeaderWriterATtoAU
+    -> GoodsTransportHeaderWriterATtoAU
+    -> DeleteCol
     -> GoodsTransportedTableInterpreter
     -> GoodsTransportedLoader
     ;
@@ -55,11 +55,11 @@ pipeline GoodsTransportedPipeline {
         write: ['year', 'month', 'goods_id', 'goods_name', 'goods_source'];
     }
     
-    /* 6.2 Write header from AT to AU ;
+    // 6.2 Write header from AT to AU ;
     block GoodsTransportHeaderWriterATtoAU oftype CellWriter {
         at: range AT1:AU1;
         write: ['abroad', 'total'];
-    }*/
+    }
 
 
 }
