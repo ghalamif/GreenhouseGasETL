@@ -4,6 +4,8 @@ pipeline GoodsTransportedPipeline {
     -> GoodsTransportedCSVInterpreter 
     -> SelectData
     -> DeleteCol
+    ->GoodsTransportHeaderWriterAtoE
+    //-> GoodsTransportHeaderWriterATtoAU
     -> GoodsTransportedTableInterpreter
     -> GoodsTransportedLoader
     ;
@@ -45,6 +47,21 @@ pipeline GoodsTransportedPipeline {
         table: "goods"; 
         file: "./goodsTransportedByTrain.sqlite"; 
     }
+
+
+       // 6.1 Write header from A to E ;
+    block GoodsTransportHeaderWriterAtoE oftype CellWriter {
+        at: range A1:E1;
+        write: ['year', 'month', 'goods_id', 'goods_name', 'goods_source'];
+    }
+    
+    /* 6.2 Write header from AT to AU ;
+    block GoodsTransportHeaderWriterATtoAU oftype CellWriter {
+        at: range AT1:AU1;
+        write: ['abroad', 'total'];
+    }*/
+
+
 }
 
 valuetype positive oftype integer {
@@ -68,6 +85,10 @@ valuetype GermanMonth oftype text {
 }
 
 constraint IDRegexConstraint oftype RegexConstraint {
+    regex: /^(NST7-)([A-Z0-9]{3})$/;
+}
+
+constraint positiveNumber oftype RegexConstraint {
     regex: /^(NST7-)([A-Z0-9]{3})$/;
 }
 
