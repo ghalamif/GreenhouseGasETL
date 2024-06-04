@@ -4,7 +4,7 @@ pipeline GoodsPipeline {
     GoodsCsvExtractor
     -> GoodsTextFileInterpreter
     -> GoodsCsvInterpreter
-    -> Deleterow
+    //-> SelectData
     -> DeleteCol
     -> GoodsTableInterpreter
     -> GoodsLoader;
@@ -21,17 +21,20 @@ pipeline GoodsPipeline {
     delimiter: ";";
     }
 
-
-    block Deleterow oftype RowDeleter {
+    /*block Deleterow oftype RowDeleter {
         delete: [row 1, row 2, row 3, row 4, row 5, row 6, row 7, row 8, row 41337, row 41338, row 41339];
     }
 
+    block SelectData oftype CellRangeSelector {
+        select: range A9:AU41336;
+    }
+ */
     block DeleteCol oftype ColumnDeleter {
     delete: [
         column F, column G, column H, column I, column J, column K, column L, column M, column N, column O, column P, column Q, column R, column S, column T, column U, column V, column W, column X, column Y, column Z,
         column AT, column AU];
     }
-    
+
 
 
     block GoodsTableInterpreter oftype TableInterpreter {
