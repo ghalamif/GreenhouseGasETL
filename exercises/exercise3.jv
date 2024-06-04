@@ -1,82 +1,76 @@
 
-pipeline GoodsPipeline {
-
-    GoodsCsvExtractor
-    -> GoodsTextFileInterpreter
-    -> GoodsCsvInterpreter
-    //-> SelectData
+pipeline GoodsTransportedPipeline {
+    GoodsTransportedExtractor -> GoodsTransportedTextFileInterpreter
+    -> GoodsTransportedCSVInterpreter 
+    -> SelectData
     -> DeleteCol
-    -> GoodsTableInterpreter
-    -> GoodsLoader;
-
-
-
-    block GoodsCsvExtractor oftype HttpExtractor  {
-    url: "https://www-genesis.destatis.de/genesis/downloads/00/tables/46131-0014_00.csv";
+    -> GoodsTransportedTableInterpreter
+    -> GoodsTransportedLoader
+    ;
+    
+    block GoodsTransportedExtractor oftype HttpExtractor { 
+        url: "https://www-genesis.destatis.de/genesis/downloads/00/tables/46131-0014_00.csv"; 
     }
-
-    block GoodsTextFileInterpreter oftype TextFileInterpreter {encoding: "latin2"; }
-
-    block GoodsCsvInterpreter oftype CSVInterpreter {
-    delimiter: ";";
-    }
-
-    /*block Deleterow oftype RowDeleter {
-        delete: [row 1, row 2, row 3, row 4, row 5, row 6, row 7, row 8, row 41337, row 41338, row 41339];
-    }
-
+    
+    block GoodsTransportedTextFileInterpreter oftype TextFileInterpreter { encoding: "latin2";  }
+    
     block SelectData oftype CellRangeSelector {
         select: range A9:AU41336;
     }
- */
+
     block DeleteCol oftype ColumnDeleter {
-    delete: [
+        delete: [
         column F, column G, column H, column I, column J, column K, column L, column M, column N, column O, column P, column Q, column R, column S, column T, column U, column V, column W, column X, column Y, column Z,
-        column AT, column AU];
+        column AA, column AB,column AC,column AD,column AE,column AF,column AG,column AH,column AI,column AJ,column AK,column AL,column AM,column AN,column AO,column AP,column AQ,column AR,column AS];
+    }
+    
+    block GoodsTransportedCSVInterpreter oftype CSVInterpreter { 
+        delimiter: ';'; 
     }
 
-
-
-    block GoodsTableInterpreter oftype TableInterpreter {
-    header: false;
-    columns: [
-        "year" oftype integer,
-        "month" oftype GermanMonth, 
-        "goods_id" oftype IDRegex,
-        "goods_name" oftype text,
-        "goods_source" oftype text,
-        "abroad" oftype integer,
-        "total" oftype integer,
-    ];
+    block GoodsTransportedTableInterpreter oftype TableInterpreter {
+        header: false;
+        columns: [
+            "year" oftype integer,
+            "month" oftype GermanMonth,
+            "goods_id" oftype IDRegex,
+            "goods_name" oftype text,
+            "goods_source" oftype text,
+            "abroad" oftype positive,
+            "total" oftype positive
+        ];
     }
-
-    constraint GermanMonthConstraint oftype AllowlistConstraint {
-        allowlist: [
-            "Januar", "Februar", "März", "April",
-            "Mai", "Juni", "Juli", "August",
-            "September", "Oktober", "November", "Dezember"];
+    
+    block GoodsTransportedLoader oftype SQLiteLoader { 
+        table: "goods"; 
+        file: "./goodsTransportedByTrain.sqlite"; 
     }
-
-    constraint IDRegexConstraint oftype RegexConstraint {
-        regex: /^(NST7-)([A-Z0-9]{3})$/;
-    }
-
-    valuetype GermanMonth oftype text {
-        constraints: [GermanMonthConstraint];
-    }
-
-    valuetype IDRegex oftype text {
-        constraints: [IDRegexConstraint];
-    }
-
-    block GoodsLoader oftype SQLiteLoader {
-    table: "goods";
-    file: "./goodsTransportedByTrain.sqlite";
-    }
-
 }
 
+valuetype positive oftype integer {
+    constraints: [ PositiveConstraint ];
+}
 
+constraint PositiveConstraint oftype RangeConstraint {
+    lowerBound: 1;
+    upperBoundInclusive: false;
+}
 
+constraint GermanMonthConstraint oftype AllowlistConstraint {
+    allowlist: [
+        "Januar", "Februar", "März", "April",
+        "Mai", "Juni", "Juli", "August",
+        "September", "Oktober", "November", "Dezember"];
+}
 
+valuetype GermanMonth oftype text {
+    constraints: [GermanMonthConstraint];
+}
 
+constraint IDRegexConstraint oftype RegexConstraint {
+    regex: /^(NST7-)([A-Z0-9]{3})$/;
+}
+
+valuetype IDRegex oftype text {
+    constraints: [IDRegexConstraint];
+}
