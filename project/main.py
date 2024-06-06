@@ -1,4 +1,6 @@
 import logging
+import re
+import os
 from DataProcessor import DataProcessor
 from KaggleDownloader import KaggleDownloader
 
@@ -7,36 +9,55 @@ def main():
     
     # Initialize the KaggleDownloader
     kaggle_downloader = KaggleDownloader()
-    
+
+    output_Path = 'data/'
+    dataset_path = 'datasets/'
+    #csv_options = ['latin1', 'ISO-8859-1', 'cp1252']
+
     commands = [
-        'kaggle datasets download -d vagifa/worldwide-crop-production',
-        'kaggle datasets download -d saurabhshahane/green-house-gas-historical-emission-data'
+        'kaggle datasets download -d farzanghalami/worldwide-crop-production',
+        'kaggle datasets download -d farzanghalami/historical-emissions'
+        
     ]
     
     kaggle_downloader.download_datasets(commands)
     
-    zip_files = ['worldwide-crop-production.zip', 'green-house-gas-historical-emission-data.zip']
-    extract_folders = ['worldwide-crop-production', 'green-house-gas-historical-emission-data']
-    kaggle_downloader.extract_zip_files(zip_files, extract_folders)
-    
+    datasets_info = []
+    for command in commands:
+        match = re.search(r'\/([^\s]+)', command)
+        if match:
+            name = match.group(1)
+            zip_file_name = f"{name}.zip"
+            SQlite_file_name = f"{output_Path}{name}.sqlite"
+            csv_file_name = f"{dataset_path}{name}.csv"
+            #if name == 'worldwide-crop-production':
+                #csv_file_name = f"{dataset_path}worldwide_crop_consumption.csv"
+            datasets_info.append({"name": name, "zipFileName": zip_file_name, "SQliteFileName": SQlite_file_name.replace('-','_'), "csvFileName": csv_file_name.replace('-','_')})
+    # Create the data directory if it doesn't exist
+    if not os.path.exists(dataset_path):
+        os.makedirs(dataset_path)
+
+    for dataset in datasets_info:
+        kaggle_downloader.extract_zip_file(dataset["zipFileName"], dataset_path)
+
+        # List files in the dataset_path directory to ensure files are extracted
+        extracted_files = os.listdir(dataset_path)
+        logging.info(f"Files in {dataset_path}: {extracted_files}")
+
+        # Log full paths of files in the dataset_path directory
+        for root, dirs, files in os.walk(dataset_path):
+            for file in files:
+                logging.info(f"Extracted file: {os.path.join(root, file)}")
+
     # Initialize the DataProcessor
-    data_processor = DataProcessor()
-    
-    crop_df = data_processor.read_csv_file('worldwide-crop-production/worldwide_crop_consumption.csv', ['latin1', 'ISO-8859-1', 'cp1252'])
-    if crop_df is not None:
-        crop_df = data_processor.process_crop_data(crop_df)
-        data_processor.save_to_sqlite(crop_df, 'data/worldwide_crop_consumption.sqlite', 'crop_production')
-    
-    ghg_df = data_processor.read_csv_file('green-house-gas-historical-emission-data/ghg-emissions.csv', ['latin1', 'ISO-8859-1', 'cp1252'])
-    if ghg_df is not None:
-        ghg_df = data_processor.process_ghg_data(ghg_df)
-        data_processor.save_to_sqlite(ghg_df, 'data/ghg-emissions.sqlite', 'ghg_emissions')
-    
-    crop_df_sqlite = data_processor.load_sqlite_table('data/worldwide_crop_consumption.sqlite', 'crop_production')
-    ghg_df_sqlite = data_processor.load_sqlite_table('data/ghg-emissions.sqlite', 'ghg_emissions')
-    
-    merged_df = data_processor.merge_data(crop_df_sqlite, ghg_df_sqlite)
-    data_processor.save_to_sqlite(merged_df, 'data/merged.sqlite', 'merged_data')
+    data_processor = DataProcessor(datasets_info[1]['csvFileName'], datasets_info[0]['csvFileName'])
+
+    try:
+        merged_df = data_processor.merge_crop_emmision()
+        merged_df.info()
+        data_processor.save_to_sqlite(merged_df, 'data/merged.sqlite', 'merged_crop_emission')
+    except Exception as e:
+        logging.error(f"Error loading or merging data: {e}")
 
 if __name__ == '__main__':
     main()

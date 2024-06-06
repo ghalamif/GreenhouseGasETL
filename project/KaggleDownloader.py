@@ -28,3 +28,9 @@ class KaggleDownloader:
                 zip_ref.extractall(folder)
             os.remove(zip_file)
             logging.info(f"Extracted and removed: {zip_file}")
+
+    def extract_zip_file(self, zip_file, extract_folder):
+        with zipfile.ZipFile(zip_file, 'r') as zip_ref:
+            zip_ref.extractall(extract_folder)
+        os.remove(zip_file)
+        logging.info(f"Extracted and removed: {zip_file}")
