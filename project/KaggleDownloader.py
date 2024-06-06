@@ -1,15 +1,39 @@
+import json
 import os
 import subprocess
 import logging
 import zipfile
 
 class KaggleDownloader:
-    def __init__(self):
+
+    def __init__(self, gitignore_path=None):
+        if gitignore_path is None:
+            parent_dir = os.path.abspath(os.path.join(os.getcwd(), os.pardir))
+            gitignore_path = os.path.join(parent_dir, '.gitignore')
+        self.gitignore_path = gitignore_path
         self.set_environment()
-    
+
+    def read_credentials_from_gitignore(self):
+        with open(self.gitignore_path) as f:
+            for line in f:
+                if line.strip().startswith('{'):
+                    kaggle_token_info = json.loads(line.strip())
+                    return kaggle_token_info
+        raise ValueError("Kaggle credentials not found in .gitignore")
+
     def set_environment(self):
-        # Set environment variables for Kaggle API.
+        # Set Kaggle environment variables
+        kaggle_token_info = self.read_credentials_from_gitignore()
         kaggle_dir = os.path.expanduser('~/.kaggle')
+        os.makedirs(kaggle_dir, exist_ok=True)
+        
+        # Create kaggle.json file with the token
+        kaggle_json_path = os.path.join(kaggle_dir, 'kaggle.json')
+        with open(kaggle_json_path, 'w') as f:
+            json.dump(kaggle_token_info, f)
+        os.chmod(kaggle_json_path, 0o600)  # Set appropriate permissions
+
+        # Ensure the cache directory exists
         cache_dir = os.path.join(kaggle_dir, 'cache')
         os.environ['KAGGLE_CONFIG_DIR'] = kaggle_dir
         os.environ['KAGGLE_DATASETS_CACHE'] = cache_dir
