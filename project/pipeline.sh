@@ -1,10 +1,10 @@
 #!/bin/bash
 
 if command -v python3 &>/dev/null; then
-    python3 main.py
+    python3 pipeline.py
 
 elif command -v python &>/dev/null; then
-    python main.py
+    python pipeline.py
 
 else
     echo "Python is not installed."
