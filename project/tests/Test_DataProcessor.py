@@ -37,8 +37,15 @@ class TestDataProcessor(unittest.TestCase):
             self.assertIn(column, processed_emissions.columns, f"{column} column missing in emissions data frame.")
 
         #data type
-        self.assertEqual(processed_emissions['Year'].dtype, 'datetime64[ns]', "Year column is not a datetime type.")
-        self.assertEqual(processed_emissions['Country'].dtype, 'object', "Country column is not a object type.")
+        data_types = {
+            'Year': 'datetime64[ns]',
+            'CH4': 'float64',
+            'N2O': 'float64',
+            'All GHG': 'float64',
+            'Country': 'object'
+        }
+        for column, dtype in data_types.items():
+            self.assertEqual(processed_emissions[column].dtype, dtype, f"Data type of {column} column is not {dtype}.")
 
         # check that Year should be between 1990 and 2020
         year_min = processed_emissions['Year'].dt.year.min()
@@ -54,13 +61,21 @@ class TestDataProcessor(unittest.TestCase):
         processed_crop = self.processor.load_and_process_crop_data()
         self.assertFalse(processed_crop.empty, "Processed crop DataFrame is empty.")
         allowedcolmns = ['Maize', 'Year', 'Soybean', 'Wheat', 'Rice', 'Location']
+
         for column in allowedcolmns:
             self.assertIn(column, processed_crop.columns, f"{column} column missing in crop data frame.")
 
         # check data types
-        self.assertEqual(processed_crop['Year'].dtype, 'datetime64[ns]', "Year column is not datetime type in processed crop DataFrame.")
-        self.assertEqual(processed_crop['Location'].dtype, 'object', "Location column is not a object type in processed crop DataFrame.")
-
+        data_types = {
+            'Year': 'datetime64[ns]',
+            'Maize': 'float64',
+            'Soybean': 'float64',
+            'Wheat': 'float64',
+            'Rice': 'float64',
+            'Location': 'object'
+        }
+        for column, dtype in data_types.items():
+            self.assertEqual(processed_crop[column].dtype, dtype, f"Data type of {column} column is not {dtype}.")
 
         # check that Year should be between 1990 and 2020
         year_min = processed_crop['Year'].dt.year.min()
