@@ -1,7 +1,7 @@
 #!/bin/bash
+#sd
 
-
-cd path/to/your/test/directory
+cd tests
 
 # Run the unittest
 python3 -m unittest Test_DataProcessor.py
