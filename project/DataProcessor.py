@@ -4,7 +4,6 @@ import numpy as np
 import sqlite3
 import logging
 
-
 class DataProcessor:
     def __init__(self, emissions_file, crop_file):
         self.emissions_file = emissions_file
@@ -17,6 +16,7 @@ class DataProcessor:
         processed_emissions_df = processed_emissions_df.melt(id_vars=['Country', 'Gas'], var_name='Year', value_name='Emissions')
         processed_emissions_df = processed_emissions_df.pivot(index=['Country', 'Year'], columns='Gas', values='Emissions').reset_index()
         processed_emissions_df['Year'] = pd.to_datetime(processed_emissions_df['Year'], format='%Y')
+        logging.debug("Processed Emissions DataFrame:\n{}".format(processed_emissions_df.head()))
         return processed_emissions_df
 
     def load_and_process_crop_data(self):
@@ -37,6 +37,7 @@ class DataProcessor:
         
         processed_crop_df.loc[processed_crop_df['Wheat'] == 0.00, 'Wheat'] = np.nan
         processed_crop_df.replace("China (People's Republic of)", "China", inplace=True)
+        logging.debug("Processed Crop DataFrame:\n{}".format(processed_crop_df.head()))
         return processed_crop_df
 
     def merge_crop_emmision(self):
@@ -48,17 +49,22 @@ class DataProcessor:
             merged_df = merged_df[merged_df['Country'].isin(['World', 'China', 'India', 'United States'])]
             merged_df['Total Crop Production'] = merged_df[['Maize', 'Rice', 'Soybean', 'Wheat']].sum(axis=1)
             merged_df = merged_df.set_index('Year')
+
+            # Convert object columns to numeric types explicitly, except 'Country'
+            for column in merged_df.select_dtypes(include=['object']).columns:
+                if column != 'Country':
+                    merged_df[column] = pd.to_numeric(merged_df[column], errors='coerce')
+
             merged_df = merged_df.interpolate(method='time', limit_direction='both')
             merged_df = merged_df.reset_index()
+            logging.debug("Merged DataFrame:\n{}".format(merged_df.head()))
             return merged_df
         except Exception as e:
             logging.error(f"Error merging crop and emissions data: {e}")
             return None
-
 
     def save_to_sqlite(self, df, db_path, table_name):
         os.makedirs('data', exist_ok=True)
         with sqlite3.connect(db_path) as conn:
             df.to_sql(table_name, conn, if_exists='replace', index=False)
         logging.info(f"Data saved to SQLite database at: {db_path}")
-        

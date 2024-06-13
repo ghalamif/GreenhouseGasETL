@@ -12,7 +12,7 @@ class KaggleDownloader:
             gitignore_path = os.path.join(parent_dir, '.gitignore')
         self.gitignore_path = gitignore_path
         self.set_environment()
-
+    
     def read_credentials_from_gitignore(self):
         with open(self.gitignore_path) as f:
             for line in f:
