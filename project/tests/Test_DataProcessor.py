@@ -125,6 +125,7 @@ class TestDataProcessor(unittest.TestCase):
         for column, dtype in expected_types.items():
             self.assertEqual(merged_data[column].dtype, dtype, f"Data type of {column} column is not {dtype}.")
 
+    
 
 #########################################################################################################################
 ############################################ save_to_sqlite ##############################################################
@@ -154,6 +155,8 @@ class TestDataProcessor(unittest.TestCase):
         self.assertLessEqual(year_max, 2020, f"Year column contains years after 2020")
 
 
+
+
         expected_types = {  
             'Year': 'object', 
             'Country': 'object',
@@ -168,6 +171,14 @@ class TestDataProcessor(unittest.TestCase):
         }
         for column, dtype in expected_types.items():
             self.assertEqual(df[column].dtype, dtype, f"Data type of {column} column is not {dtype}.")
+
+        allowed_country = ['China', 'India', 'United States','World']
+        all_mentioned_country =  df['Country'].unique()
+        # Convert lists to sets and compare
+        self.assertEqual(set(allowed_country), set(all_mentioned_country), 
+                            f"Countries mentioned in data ({all_mentioned_country}) do not match allowed countries ({allowed_country}).")
+
+
         conn.close()
 
 if __name__ == '__main__':
