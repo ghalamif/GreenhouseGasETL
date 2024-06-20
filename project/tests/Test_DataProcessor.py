@@ -178,6 +178,10 @@ class TestDataProcessor(unittest.TestCase):
         self.assertEqual(set(allowed_country), set(all_mentioned_country), 
                             f"Countries mentioned in data ({all_mentioned_country}) do not match allowed countries ({allowed_country}).")
 
+        columns_to_check = ['All GHG', 'CH4', 'N2O', 'Maize', 'Rice', 'Soybean', 'Wheat', 'Total Crop Production']
+        for column in columns_to_check:
+            self.assertFalse((df[column] < 0).all(), f"{column} contains non-positive values.")
+
 
         conn.close()
 
