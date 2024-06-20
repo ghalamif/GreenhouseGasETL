@@ -6,6 +6,7 @@ import sys
 import logging
 sys.path.insert(0, '..')  
 from DataProcessor import DataProcessor
+import subprocess
 
 logging.basicConfig(level=logging.DEBUG)  
 
@@ -13,14 +14,15 @@ class TestDataProcessor(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
+        subprocess.run(['python3', '../pipeline.py'], check=True)
         cls.emissions_file = '../datasets/historical_emissions.csv'
         cls.crop_file = '../datasets/worldwide_crop_production.csv'
         cls.db_path = '../data/merged.sqlite'
         cls.table_name = 'merged_crop_emission'
         
         cls.processor = DataProcessor(cls.emissions_file, cls.crop_file)
-
     def setUp(self):
+        
         if os.path.exists(self.db_path):
             os.remove(self.db_path)
 
@@ -152,18 +154,17 @@ class TestDataProcessor(unittest.TestCase):
         self.assertGreaterEqual(year_min, 1990, f"Year column contains years before 1990")
         self.assertLessEqual(year_max, 2020, f"Year column contains years after 2020")
 
-    
         expected_types = {  
-            'Year': 'TEXT',
-            'Country': 'TEXT',
-            'All GHG': 'REAL',
-            'CH4': 'REAL',
-            'N2O': 'REAL',
-            'Maize': 'REAL',
-            'Rice': 'REAL',
-            'Soybean': 'REAL',
-            'Wheat': 'REAL',
-            'Total Crop Production': 'REAL'
+            'Year': 'object', 
+            'Country': 'object',
+            'All GHG': 'float64',
+            'CH4': 'float64',
+            'N2O': 'float64',
+            'Maize': 'float64',
+            'Rice': 'float64',
+            'Soybean': 'float64',
+            'Wheat': 'float64',
+            'Total Crop Production': 'float64'
         }
         for column, dtype in expected_types.items():
             self.assertEqual(df[column].dtype, dtype, f"Data type of {column} column is not {dtype}.")

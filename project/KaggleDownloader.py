@@ -8,8 +8,10 @@ class KaggleDownloader:
 
     def __init__(self, gitignore_path=None):
         if gitignore_path is None:
-            parent_dir = os.path.abspath(os.path.join(os.getcwd(), os.pardir))
+            script_dir = os.path.dirname(os.path.abspath(__file__))
+            parent_dir = os.path.abspath(os.path.join(script_dir, os.pardir))
             gitignore_path = os.path.join(parent_dir, '.gitignore')
+            print(gitignore_path)
         self.gitignore_path = gitignore_path
         self.set_environment()
     
@@ -31,7 +33,7 @@ class KaggleDownloader:
         kaggle_json_path = os.path.join(kaggle_dir, 'kaggle.json')
         with open(kaggle_json_path, 'w') as f:
             json.dump(kaggle_token_info, f)
-        os.chmod(kaggle_json_path, 0o600)  # Set appropriate permissions
+        os.chmod(kaggle_json_path, 0o600)  
 
         # Ensure the cache directory exists
         cache_dir = os.path.join(kaggle_dir, 'cache')
@@ -58,3 +60,5 @@ class KaggleDownloader:
             zip_ref.extractall(extract_folder)
         os.remove(zip_file)
         logging.info(f"Extracted and removed: {zip_file}")
+
+    
