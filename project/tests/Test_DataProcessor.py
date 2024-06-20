@@ -9,22 +9,21 @@ from DataProcessor import DataProcessor
 import subprocess
 
 logging.basicConfig(level=logging.DEBUG)  
-
 class TestDataProcessor(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        subprocess.run(['python3', '../pipeline.py'], check=True)
+        
         cls.emissions_file = '../datasets/historical_emissions.csv'
         cls.crop_file = '../datasets/worldwide_crop_production.csv'
-        cls.db_path = '../data/merged.sqlite'
+        cls.db_path = 'data/merged.sqlite'
         cls.table_name = 'merged_crop_emission'
+    
+        if os.path.exists(cls.db_path):
+            os.remove(cls.db_path)
+        subprocess.run(['python3', '../pipeline.py'], check=True)
         
         cls.processor = DataProcessor(cls.emissions_file, cls.crop_file)
-    def setUp(self):
-        
-        if os.path.exists(self.db_path):
-            os.remove(self.db_path)
 
 #########################################################################################################################
 ############################################ emission ###################################################################
@@ -130,10 +129,10 @@ class TestDataProcessor(unittest.TestCase):
 #########################################################################################################################
 ############################################ save_to_sqlite ##############################################################
 ######################################################################################################################### 
+    def test_existenceOF_output(self):
+        self.assertTrue(os.path.isfile(self.db_path), "Database file was not created!")
+
     def test_save_to_sqlite(self):
-        merged_data = self.processor.merge_crop_emmision()
-        self.processor.save_to_sqlite(merged_data, self.db_path, self.table_name)
-        self.assertTrue(os.path.isfile(self.db_path), "SQLite database file was not created.")
         
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
@@ -153,6 +152,7 @@ class TestDataProcessor(unittest.TestCase):
         year_max = pd.to_datetime(df['Year']).dt.year.max()
         self.assertGreaterEqual(year_min, 1990, f"Year column contains years before 1990")
         self.assertLessEqual(year_max, 2020, f"Year column contains years after 2020")
+
 
         expected_types = {  
             'Year': 'object', 

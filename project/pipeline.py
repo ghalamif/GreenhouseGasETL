@@ -7,7 +7,6 @@ from KaggleDownloader import KaggleDownloader
 def main():
     logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
     
-    # Initialize the KaggleDownloader
     kaggle_downloader = KaggleDownloader()
 
     output_Path = 'data/'
@@ -38,14 +37,6 @@ def main():
     for dataset in datasets_info:
         kaggle_downloader.extract_zip_file(dataset["zipFileName"], dataset_path)
 
-        # List files in the dataset_path directory 
-        extracted_files = os.listdir(dataset_path)
-        logging.info(f"Files in {dataset_path}: {extracted_files}")
-
-        # Log full paths of files in the dataset_path directory
-        for root, dirs, files in os.walk(dataset_path):
-            for file in files:
-                logging.info(f"Extracted file: {os.path.join(root, file)}")
 
     data_processor = DataProcessor(datasets_info[1]['csvFileName'], datasets_info[0]['csvFileName'])
 

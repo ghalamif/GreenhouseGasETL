@@ -24,12 +24,10 @@ class KaggleDownloader:
         raise ValueError("Kaggle credentials not found in .gitignore")
 
     def set_environment(self):
-        # Set Kaggle environment variables
         kaggle_token_info = self.read_credentials_from_gitignore()
         kaggle_dir = os.path.expanduser('~/.kaggle')
         os.makedirs(kaggle_dir, exist_ok=True)
         
-        # Create kaggle.json file with the token
         kaggle_json_path = os.path.join(kaggle_dir, 'kaggle.json')
         with open(kaggle_json_path, 'w') as f:
             json.dump(kaggle_token_info, f)
