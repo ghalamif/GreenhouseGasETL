@@ -24,11 +24,6 @@ jobs:
         pip install kaggle
         pip install pandas
         pip install numpy
-        pip install sqlite3
-        pip install unittest
-        pip install logging
-        pip install os
-        pip install sys
         pip install re
 
 
